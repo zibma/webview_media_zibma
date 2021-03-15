@@ -38,10 +38,10 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
         );
       case 'onPageFinished':
         _platformCallbacksHandler.onPageFinished(call.arguments['url']);
-        return null;
+        return false;
       case 'onPageStarted':
         _platformCallbacksHandler.onPageStarted(call.arguments['url']);
-        return null;
+        return false;
       case 'onWebResourceError':
         _platformCallbacksHandler.onWebResourceError(
           WebResourceError(
@@ -57,7 +57,7 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
                   ),
           ),
         );
-        return null;
+        return false;
     }
     throw MissingPluginException('${call.method} was invoked but has no handler');
   }
@@ -93,13 +93,13 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
   }
 
   @override
-  Future<String> currentUrl() => _channel.invokeMethod<String>('currentUrl');
+  Future currentUrl() => _channel.invokeMethod<String>('currentUrl');
 
   @override
-  Future<bool> canGoBack() => _channel.invokeMethod<bool>("canGoBack");
+  Future canGoBack() => _channel.invokeMethod<bool>("canGoBack");
 
   @override
-  Future<bool> canGoForward() => _channel.invokeMethod<bool>("canGoForward");
+  Future canGoForward() => _channel.invokeMethod<bool>("canGoForward");
 
   @override
   Future<void> goBack() => _channel.invokeMethod<void>("goBack");
@@ -117,13 +117,13 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
   Future<void> updateSettings(WebSettings settings) {
     final Map<String, dynamic> updatesMap = _webSettingsToMap(settings);
     if (updatesMap.isEmpty) {
-      return null;
+
     }
     return _channel.invokeMethod<void>('updateSettings', updatesMap);
   }
 
   @override
-  Future<String> evaluateJavascript(String javascriptString) {
+  Future evaluateJavascript(String javascriptString) {
     return _channel.invokeMethod<String>('evaluateJavascript', javascriptString);
   }
 
@@ -138,30 +138,30 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
   }
 
   @override
-  Future<String> getTitle() => _channel.invokeMethod<String>("getTitle");
+  Future getTitle() => _channel.invokeMethod<String>("getTitle");
 
   /// Method channel implementation for [WebViewPlatform.clearCookies].
   static Future<bool> clearCookies() {
     return _cookieManagerChannel.invokeMethod<bool>('clearCookies').then<bool>((dynamic result) => result);
   }
 
-  static Map<String, dynamic> _webSettingsToMap(WebSettings settings) {
+  static Map<String, dynamic> _webSettingsToMap(WebSettings? settings) {
     final Map<String, dynamic> map = <String, dynamic>{};
     void _addIfNonNull(String key, dynamic value) {
       if (value == null) {
-        return;
+        return null;
       }
       map[key] = value;
     }
 
     void _addSettingIfPresent<T>(String key, WebSetting<T> setting) {
       if (!setting.isPresent) {
-        return;
+        return null;
       }
       map[key] = setting.value;
     }
 
-    _addIfNonNull('jsMode', settings.javascriptMode?.index);
+    _addIfNonNull('jsMode', settings!.javascriptMode?.index);
     _addIfNonNull('hasNavigationDelegate', settings.hasNavigationDelegate);
     _addIfNonNull('debuggingEnabled', settings.debuggingEnabled);
     _addIfNonNull('gestureNavigationEnabled', settings.gestureNavigationEnabled);
@@ -176,14 +176,14 @@ class MethodChannelWebViewPlatform implements WebViewPlatformController {
   static Map<String, dynamic> creationParamsToMap(CreationParams creationParams) {
     final map = <String, dynamic>{};
     if (creationParams.initialUrl == null)
-      map['initialData'] = creationParams.initialData.toMap();
+      map['initialData'] = creationParams.initialData!.toMap();
     else
       map['initialUrl'] = creationParams.initialUrl;
 
     return map
       ..addAll({
         'settings': _webSettingsToMap(creationParams.webSettings),
-        'javascriptChannelNames': creationParams.javascriptChannelNames.toList(),
+        'javascriptChannelNames': creationParams.javascriptChannelNames!.toList(),
         'userAgent': creationParams.userAgent,
         'autoMediaPlaybackPolicy': creationParams.autoMediaPlaybackPolicy.index,
       });

@@ -41,7 +41,7 @@ typedef void JavascriptMessageHandler(JavascriptMessage message);
 
 /// Information about a navigation action that is about to be executed.
 class NavigationRequest {
-  NavigationRequest._({this.url, this.isForMainFrame});
+  NavigationRequest._({required this.url, required this.isForMainFrame});
 
   /// The URL that will be loaded if the navigation is executed.
   final String url;
@@ -108,8 +108,8 @@ class JavascriptChannel {
   ///
   /// The parameters `name` and `onMessageReceived` must not be null.
   JavascriptChannel({
-    @required this.name,
-    @required this.onMessageReceived,
+    required this.name,
+    required this.onMessageReceived,
   })  : assert(name != null),
         assert(onMessageReceived != null),
         assert(_validChannelNames.hasMatch(name));
@@ -140,7 +140,7 @@ class WebView extends StatefulWidget {
   ///
   /// The `javascriptMode` and `autoMediaPlaybackPolicy` parameters must not be null.
   const WebView({
-    Key key,
+    Key? key,
     this.onWebViewCreated,
     this.initialUrl,
     this.initialData,
@@ -161,7 +161,7 @@ class WebView extends StatefulWidget {
             'either use initialData or initialUrl'),
         super(key: key);
 
-  static WebViewPlatform _platform;
+  static WebViewPlatform? _platform;
 
   /// Sets a custom [WebViewPlatform].
   ///
@@ -191,11 +191,11 @@ class WebView extends StatefulWidget {
               "Trying to use the default webview implementation for $defaultTargetPlatform but there isn't a default one");
       }
     }
-    return _platform;
+    return _platform!;
   }
 
   /// If not null invoked once the web view is created.
-  final WebViewCreatedCallback onWebViewCreated;
+  final WebViewCreatedCallback? onWebViewCreated;
 
   /// Which gestures should be consumed by the web view.
   ///
@@ -206,13 +206,13 @@ class WebView extends StatefulWidget {
   ///
   /// When this set is empty or null, the web view will only handle pointer events for gestures that
   /// were not claimed by any other gesture recognizer.
-  final Set<Factory<OneSequenceGestureRecognizer>> gestureRecognizers;
+  final Set<Factory<OneSequenceGestureRecognizer>>? gestureRecognizers;
 
   /// The initial URL to load.
-  final String initialUrl;
+  final String? initialUrl;
 
   /// The initial data to load.
-  final WebData initialData;
+  final WebData? initialData;
 
   /// Whether Javascript execution is enabled.
   final JavascriptMode javascriptMode;
@@ -244,7 +244,7 @@ class WebView extends StatefulWidget {
   /// channels in the list.
   ///
   /// A null value is equivalent to an empty set.
-  final Set<JavascriptChannel> javascriptChannels;
+  final Set<JavascriptChannel>? javascriptChannels;
 
   /// A delegate function that decides how to handle navigation actions.
   ///
@@ -268,10 +268,10 @@ class WebView extends StatefulWidget {
   ///     * When a navigationDelegate is set pages with frames are not properly handled by the
   ///       webview, and frames will be opened in the main frame.
   ///     * When a navigationDelegate is set HTTP requests do not include the HTTP referer header.
-  final NavigationDelegate navigationDelegate;
+  final NavigationDelegate? navigationDelegate;
 
   /// Invoked when a page starts loading.
-  final PageStartedCallback onPageStarted;
+  final PageStartedCallback? onPageStarted;
 
   /// Invoked when a page has finished loading.
   ///
@@ -283,13 +283,13 @@ class WebView extends StatefulWidget {
   /// When invoked on iOS or Android, any Javascript code that is embedded
   /// directly in the HTML has been loaded and code injected with
   /// [WebViewController.evaluateJavascript] can assume this.
-  final PageFinishedCallback onPageFinished;
+  final PageFinishedCallback? onPageFinished;
 
   /// Invoked when a web resource has failed to load.
   ///
   /// This can be called for any resource (iframe, image, etc.), not just for
   /// the main page.
-  final WebResourceErrorCallback onWebResourceError;
+  final WebResourceErrorCallback? onWebResourceError;
 
   /// Controls whether WebView debugging is enabled.
   ///
@@ -323,7 +323,7 @@ class WebView extends StatefulWidget {
   /// user agent.
   ///
   /// By default `userAgent` is null.
-  final String userAgent;
+  final String? userAgent;
 
   /// Which restrictions apply on automatic media playback.
   ///
@@ -340,7 +340,7 @@ class WebView extends StatefulWidget {
 class _WebViewState extends State<WebView> {
   final Completer<WebViewController> _controller = Completer<WebViewController>();
 
-  _PlatformCallbacksHandler _platformCallbacksHandler;
+  _PlatformCallbacksHandler? _platformCallbacksHandler;
 
   @override
   Widget build(BuildContext context) {
@@ -365,24 +365,24 @@ class _WebViewState extends State<WebView> {
     super.didUpdateWidget(oldWidget);
     _assertJavascriptChannelNamesAreUnique();
     _controller.future.then((WebViewController controller) {
-      _platformCallbacksHandler._widget = widget;
+      _platformCallbacksHandler!._widget = widget;
       controller._updateWidget(widget);
     });
   }
 
   void _onWebViewPlatformCreated(WebViewPlatformController webViewPlatform) {
-    final WebViewController controller = WebViewController._(widget, webViewPlatform, _platformCallbacksHandler);
+    final WebViewController controller = WebViewController._(widget, webViewPlatform, _platformCallbacksHandler!);
     _controller.complete(controller);
     if (widget.onWebViewCreated != null) {
-      widget.onWebViewCreated(controller);
+      widget.onWebViewCreated!(controller);
     }
   }
 
   void _assertJavascriptChannelNamesAreUnique() {
-    if (widget.javascriptChannels == null || widget.javascriptChannels.isEmpty) {
+    if (widget.javascriptChannels == null || widget.javascriptChannels!.isEmpty) {
       return;
     }
-    assert(_extractChannelNames(widget.javascriptChannels).length == widget.javascriptChannels.length);
+    assert(_extractChannelNames(widget.javascriptChannels!).length == widget.javascriptChannels!.length);
   }
 }
 
@@ -391,7 +391,7 @@ CreationParams _creationParamsfromWidget(WebView widget) {
     initialUrl: widget.initialUrl,
     initialData: widget.initialData,
     webSettings: _webSettingsFromWidget(widget),
-    javascriptChannelNames: _extractChannelNames(widget.javascriptChannels),
+    javascriptChannelNames: _extractChannelNames(widget.javascriptChannels!),
     userAgent: widget.userAgent,
     autoMediaPlaybackPolicy: widget.initialMediaPlaybackPolicy,
   );
@@ -418,10 +418,10 @@ WebSettings _clearUnchangedWebSettings(WebSettings currentValue, WebSettings new
   assert(newValue.debuggingEnabled != null);
   assert(newValue.userAgent.isPresent);
 
-  JavascriptMode javascriptMode;
-  bool hasNavigationDelegate;
-  bool debuggingEnabled;
-  WebSetting<String> userAgent = WebSetting<String>.absent();
+  JavascriptMode? javascriptMode;
+  bool? hasNavigationDelegate;
+  bool? debuggingEnabled;
+  WebSetting<String> userAgent = WebSetting.absent();
   if (currentValue.javascriptMode != newValue.javascriptMode) {
     javascriptMode = newValue.javascriptMode;
   }
@@ -454,7 +454,7 @@ Set<String> _extractChannelNames(Set<JavascriptChannel> channels) {
 
 class _PlatformCallbacksHandler implements WebViewPlatformCallbacksHandler {
   _PlatformCallbacksHandler(this._widget) {
-    _updateJavascriptChannelsFromSet(_widget.javascriptChannels);
+    _updateJavascriptChannelsFromSet(_widget.javascriptChannels!);
   }
 
   WebView _widget;
@@ -464,35 +464,35 @@ class _PlatformCallbacksHandler implements WebViewPlatformCallbacksHandler {
 
   @override
   void onJavaScriptChannelMessage(String channel, String message) {
-    _javascriptChannels[channel].onMessageReceived(JavascriptMessage(message));
+    _javascriptChannels[channel]!.onMessageReceived(JavascriptMessage(message));
   }
 
   @override
-  FutureOr<bool> onNavigationRequest({String url, bool isForMainFrame}) async {
-    final NavigationRequest request = NavigationRequest._(url: url, isForMainFrame: isForMainFrame);
+  FutureOr<bool> onNavigationRequest({String? url, bool? isForMainFrame}) async {
+    final NavigationRequest request = NavigationRequest._(url: url!, isForMainFrame: isForMainFrame!);
     final bool allowNavigation =
-        _widget.navigationDelegate == null || await _widget.navigationDelegate(request) == NavigationDecision.navigate;
+        _widget.navigationDelegate == null || await _widget.navigationDelegate!(request) == NavigationDecision.navigate;
     return allowNavigation;
   }
 
   @override
   void onPageStarted(String url) {
     if (_widget.onPageStarted != null) {
-      _widget.onPageStarted(url);
+      _widget.onPageStarted!(url);
     }
   }
 
   @override
   void onPageFinished(String url) {
     if (_widget.onPageFinished != null) {
-      _widget.onPageFinished(url);
+      _widget.onPageFinished!(url);
     }
   }
 
   @override
   void onWebResourceError(WebResourceError error) {
     if (_widget.onWebResourceError != null) {
-      _widget.onWebResourceError(error);
+      _widget.onWebResourceError!(error);
     }
   }
 
@@ -517,16 +517,16 @@ class WebViewController {
     this._webViewPlatformController,
     this._platformCallbacksHandler,
   ) : assert(_webViewPlatformController != null) {
-    _settings = _webSettingsFromWidget(_widget);
+    _settings = _webSettingsFromWidget(_widget!);
   }
 
   final WebViewPlatformController _webViewPlatformController;
 
   final _PlatformCallbacksHandler _platformCallbacksHandler;
 
-  WebSettings _settings;
+  WebSettings? _settings;
 
-  WebView _widget;
+  WebView? _widget;
 
   /// Loads the specified URL.
   ///
@@ -538,11 +538,11 @@ class WebViewController {
   /// Throws an ArgumentError if `url` is not a valid URL string.
   Future<void> loadUrl(
     String url, {
-    Map<String, String> headers,
+    Map<String, String>? headers,
   }) {
     assert(url != null);
     _validateUrlString(url);
-    return _webViewPlatformController.loadUrl(url, headers);
+    return _webViewPlatformController.loadUrl(url, headers!);
   }
 
   /// Loads the specified data.
@@ -550,18 +550,18 @@ class WebViewController {
   /// Throws an ArgumentError if `url` is not a valid URL string.
   Future<void> loadData(
     String data, {
-    String baseUrl,
-    String mimeType,
-    String encoding,
-    String historyUrl,
+    String? baseUrl,
+    String? mimeType,
+    String? encoding,
+    String? historyUrl,
   }) {
     assert(data != null);
     return _webViewPlatformController.loadData(
       data,
-      baseUrl,
-      mimeType,
-      encoding,
-      historyUrl,
+      baseUrl!,
+      mimeType!,
+      encoding!,
+      historyUrl!,
     );
   }
 
@@ -572,7 +572,7 @@ class WebViewController {
   /// current URL changes again by the time this function returns (in other
   /// words, by the time this future completes, the WebView may be displaying a
   /// different URL).
-  Future<String> currentUrl() {
+  Future currentUrl() {
     return _webViewPlatformController.currentUrl();
   }
 
@@ -580,7 +580,7 @@ class WebViewController {
   ///
   /// Note that this operation is asynchronous, and it is possible that the "canGoBack" state has
   /// changed by the time the future completed.
-  Future<bool> canGoBack() {
+  Future canGoBack() {
     return _webViewPlatformController.canGoBack();
   }
 
@@ -588,7 +588,7 @@ class WebViewController {
   ///
   /// Note that this operation is asynchronous, and it is possible that the "canGoForward" state has
   /// changed by the time the future completed.
-  Future<bool> canGoForward() {
+  Future canGoForward() {
     return _webViewPlatformController.canGoForward();
   }
 
@@ -629,11 +629,11 @@ class WebViewController {
   Future<void> _updateWidget(WebView widget) async {
     _widget = widget;
     await _updateSettings(_webSettingsFromWidget(widget));
-    await _updateJavascriptChannels(widget.javascriptChannels);
+    await _updateJavascriptChannels(widget.javascriptChannels!);
   }
 
   Future<void> _updateSettings(WebSettings newSettings) {
-    final WebSettings update = _clearUnchangedWebSettings(_settings, newSettings);
+    final WebSettings update = _clearUnchangedWebSettings(_settings!, newSettings);
     _settings = newSettings;
     return _webViewPlatformController.updateSettings(update);
   }
@@ -668,8 +668,8 @@ class WebViewController {
   /// When evaluating Javascript in a [WebView], it is best practice to wait for
   /// the [WebView.onPageFinished] callback. This guarantees all the Javascript
   /// embedded in the main frame HTML has been loaded.
-  Future<String> evaluateJavascript(String javascriptString) {
-    if (_settings.javascriptMode == JavascriptMode.disabled) {
+  Future evaluateJavascript(String javascriptString) {
+    if (_settings!.javascriptMode == JavascriptMode.disabled) {
       return Future<String>.error(FlutterError('JavaScript mode must be enabled/unrestricted when calling evaluateJavascript.'));
     }
     if (javascriptString == null) {
@@ -682,7 +682,7 @@ class WebViewController {
   }
 
   /// Returns the title of the currently loaded page.
-  Future<String> getTitle() {
+  Future getTitle() {
     return _webViewPlatformController.getTitle();
   }
 }
@@ -696,7 +696,7 @@ class CookieManager {
 
   CookieManager._();
 
-  static CookieManager _instance;
+  static CookieManager? _instance;
 
   /// Clears all cookies for all [WebView] instances.
   ///
