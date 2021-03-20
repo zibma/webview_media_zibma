@@ -11,13 +11,12 @@ dependencies:
     sdk: flutter
 
 dev_dependencies:
-  pedantic: ^1.11.0
 
 flutter:
   plugin:
     platforms:
       android:
         package: io.flutter.plugins.webviewflutter
-        pluginClass: WebViewFlutter
+        pluginClass: WebViewFlutterPlugin
       ios:
-        pluginClass: FLTWebViewFlutter
+        pluginClass: FLTWebViewFlutterPlugin
