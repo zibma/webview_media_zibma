@@ -23,6 +23,6 @@ flutter:
     platforms:
       android:
         package: io.flutter.plugins.webviewflutter
-        pluginClass: WebViewFlutterPlugin
+        pluginClass: WebViewFlutter
       ios:
-        pluginClass: FLTWebViewFlutterPlugin
+        pluginClass: FLTWebViewFlutter

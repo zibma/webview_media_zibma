@@ -16,7 +16,7 @@ import io.flutter.plugin.common.PluginRegistry.Registrar;
  * <p>Call {@link #registerWith(Registrar)} to use the stable {@code io.flutter.plugin.common}
  * package instead.
  */
-public class WebViewFlutterPlugin implements FlutterPlugin {
+public class WebViewFlutter implements FlutterPlugin {
 
   private FlutterCookieManager flutterCookieManager;
 
@@ -32,7 +32,7 @@ public class WebViewFlutterPlugin implements FlutterPlugin {
    * <p>Registration should eventually be handled automatically by v2 of the
    * GeneratedPluginRegistrant. https://github.com/flutter/flutter/issues/42694
    */
-  public WebViewFlutterPlugin() {}
+  public WebViewFlutter() {}
 
   /**
    * Registers a plugin implementation that uses the stable {@code io.flutter.plugin.common}
